@@ -12,22 +12,22 @@ import (
 
 type Data struct {
 	sync.RWMutex
-	data map[string]string
+	data map[string]interface{}
 }
 
 func NewData() *Data {
 	return &Data{
-		data: make(map[string]string),
+		data: make(map[string]interface{}),
 	}
 }
 
-func (d *Data) Get(key string) string {
+func (d *Data) Get(key string) interface{} {
 	d.RLock()
 	defer d.RUnlock()
 	return d.data[key]
 }
 
-func (d *Data) Set(key string, value string) {
+func (d *Data) Set(key string, value interface{}) {
 	d.Lock()
 	defer d.Unlock()
 	d.data[key] = value

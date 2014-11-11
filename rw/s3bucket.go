@@ -48,7 +48,7 @@ func (s *S3Bucket) Init() error {
 }
 
 func (s *S3Bucket) NewWriter(d *Data) (io.WriteCloser, error) {
-	id := d.Get("identifier")
+	id := d.Get("identifier").(string)
 	if id == "" {
 		return nil, RwError(s, "No identifier")
 	}
@@ -56,7 +56,7 @@ func (s *S3Bucket) NewWriter(d *Data) (io.WriteCloser, error) {
 }
 
 func (s *S3Bucket) NewReader(d *Data) (io.ReadCloser, error) {
-	id := d.Get("identifier")
+	id := d.Get("identifier").(string)
 	if id == "" {
 		return nil, RwError(s, "No identifier")
 	}
@@ -65,7 +65,7 @@ func (s *S3Bucket) NewReader(d *Data) (io.ReadCloser, error) {
 }
 
 func (s *S3Bucket) Delete(d *Data) error {
-	id := d.Get("identifier")
+	id := d.Get("identifier").(string)
 	if id == "" {
 		return RwError(s, "No identifier")
 	}

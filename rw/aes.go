@@ -72,7 +72,7 @@ func (c *AES256) Decode(r io.Reader, w io.Writer, d *Data) error {
 	if iv64 == "" {
 		return RwError(c, "AES 256: no initialization vector provided")
 	}
-	iv, err := base64.StdEncoding.DecodeString(iv64)
+	iv, err := base64.StdEncoding.DecodeString(iv64.(string))
 	if err != nil {
 		return RwError(c, err.Error())
 	}
