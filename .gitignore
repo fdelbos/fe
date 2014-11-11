@@ -24,3 +24,9 @@ _testmain.go
 *.prof
 
 /fe
+
+/random.dat
+
+.DS_Store
+
+/env

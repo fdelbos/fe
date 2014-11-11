@@ -16,23 +16,33 @@ type Pipeline struct {
 	lastReader io.Reader
 }
 
-func (p *Pipeline) Exec(w io.WriteCloser) error {
+type EncodingPipeline struct {
+	Encoders []Encoder
+	Output   Outputer
+}
+
+type DecodingPipeline struct {
+	Decoders []Decoder
+	Input    Inputer
+}
+
+func (p *Pipeline) Exec(w io.Writer) error {
 	done := make(chan int)
 
 	go func() {
 		_, err := io.Copy(w, p.lastReader)
+		
 		if err != nil {
 			fmt.Println(err)
-		} else {
-			fmt.Println("Pipeline successfull!!!")
 		}
 		done <- 1
 	}()
 	<-done
+
 	return nil
 }
 
-func NewPipeline(encoders []Encoder, r io.Reader, d *Data) (*Pipeline, error) {
+func NewEncoding(encoders []Encoder, r io.Reader, d *Data) (*Pipeline, error) {
 	if len(encoders) == 0 {
 		return nil, errors.New("pipeline: A pipeline should have at lease 1 operation")
 	}
@@ -46,6 +56,27 @@ func NewPipeline(encoders []Encoder, r io.Reader, d *Data) (*Pipeline, error) {
 			e.Encode(r, w, d)
 			w.Close()
 		}(e, p.lastReader, writer, d)
+
+		p.lastReader = nextReader
+	}
+	return p, nil
+}
+
+func NewDecoding(decoders []Decoder, r io.Reader, d *Data) (*Pipeline, error) {
+	if len(decoders) == 0 {
+		return nil, errors.New("pipeline: A pipeline should have at lease 1 operation")
+	}
+	p := &Pipeline{
+		lastReader: r,
+	}
+	for _, e := range decoders {
+		nextReader, writer := io.Pipe()
+
+		go func(e Decoder, r io.Reader, w *io.PipeWriter, d *Data) {
+			e.Decode(r, w, d)
+			w.Close()
+		}(e, p.lastReader, writer, d)
+
 		p.lastReader = nextReader
 	}
 	return p, nil
