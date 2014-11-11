@@ -6,7 +6,7 @@ import (
 )
 
 var _ = Describe("Token", func() {
-	
+
 	var ts *TokenService
 	var redis *Redis
 	var err error
@@ -16,15 +16,15 @@ var _ = Describe("Token", func() {
 		Ω(redis).ToNot(BeNil())
 		ts = &TokenService{
 			Service: "test",
-			cache: redis,
+			cache:   redis,
 		}
 	})
 
-	It("should create, get, set, delete tokens", func(){
+	It("should create, get, set, delete tokens", func() {
 		t1, err := ts.NewToken("test", TokPost, "")
 		Ω(err).To(BeNil())
 		Ω(t1).ToNot(BeNil())
-		
+
 		t2, err := ts.Get(t1.Key)
 		Ω(err).To(BeNil())
 		Ω(t2).ToNot(BeNil())
@@ -43,5 +43,5 @@ var _ = Describe("Token", func() {
 		_, err = ts.Get(t1.Key)
 		Ω(err).ToNot(BeNil())
 	})
-	
+
 })

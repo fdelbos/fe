@@ -11,8 +11,8 @@ package main
 import (
 	"encoding/json"
 	"github.com/garyburd/redigo/redis"
-	"time"
 	"log"
+	"time"
 )
 
 var ErrCacheNotFound = redis.ErrNil

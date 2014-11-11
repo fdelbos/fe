@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/dchest/uniuri"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/dchest/uniuri"
 )
 
 var _ = Describe("Cache", func() {
@@ -16,24 +16,24 @@ var _ = Describe("Cache", func() {
 		Ω(redis).ToNot(BeNil())
 	})
 
-	It("should set, get and delete data from redis", func(){
+	It("should set, get and delete data from redis", func() {
 		id := uniuri.New()
 		Ω(id).ToNot(BeNil())
-		
+
 		data := struct {
 			Str string
-		} {"test"}
+		}{"test"}
 
 		Ω(redis.Set(id, data)).To(BeNil())
-		
+
 		from := struct {
 			Str string
 		}{""}
 		Ω(redis.Get(id, &from)).To(BeNil())
 		Ω(from.Str).To(Equal("test"))
-		
+
 		Ω(redis.Del(id)).To(BeNil())
-		
+
 		empty := struct {
 			Str string
 		}{""}

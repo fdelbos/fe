@@ -7,12 +7,12 @@
 package main
 
 import (
-	"gopkg.in/mgo.v2"	
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	// "errors"
 	// "mime/multipart"
 )
-	
+
 var (
 	ErrNotFound = mgo.ErrNotFound
 )
@@ -26,7 +26,7 @@ type Backend interface {
 }
 
 type MongoBackend struct {
-	Db *mgo.Database
+	Db         *mgo.Database
 	Collection string
 }
 
@@ -86,6 +86,6 @@ func (b *MongoBackend) Delete(id string) error {
 	if bson.IsObjectIdHex(id) == false {
 		return ErrNotFound
 	}
-	_id := bson.ObjectIdHex(id)	
+	_id := bson.ObjectIdHex(id)
 	return b.C().RemoveId(_id)
 }
