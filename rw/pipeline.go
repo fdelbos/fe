@@ -31,7 +31,7 @@ func (p *Pipeline) Exec(w io.Writer) error {
 
 	go func() {
 		_, err := io.Copy(w, p.lastReader)
-		
+
 		if err != nil {
 			fmt.Println(err)
 		}
