@@ -21,11 +21,10 @@ var _ = Describe("S3bucket", func() {
 	}
 
 	id := uniuri.New()
-	data.Set("identifier", id)
 
 	It("should Write", func() {
 		Ω(s3.Init()).To(BeNil())
-		w, err := s3.NewWriter(data)
+		w, err := s3.NewWriter(id, data)
 		Ω(err).To(BeNil())
 		Ω(w).ToNot(BeNil())
 		l, err := io.Copy(w, bytes.NewReader(testBin))
@@ -35,7 +34,7 @@ var _ = Describe("S3bucket", func() {
 	})
 
 	It("should read", func() {
-		r, err := s3.NewReader(data)
+		r, err := s3.NewReader(id, data)
 		Ω(err).To(BeNil())
 		Ω(r).ToNot(BeNil())
 		out1 := new(bytes.Buffer)
@@ -47,9 +46,9 @@ var _ = Describe("S3bucket", func() {
 	})
 
 	It("should delete", func() {
-		Ω(s3.Delete(data)).To(BeNil())
+		Ω(s3.Delete(id, data)).To(BeNil())
 
-		_, err := s3.NewReader(data)
+		_, err := s3.NewReader(id, data)
 		Ω(err).ToNot(BeNil())
 	})
 

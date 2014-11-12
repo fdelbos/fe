@@ -35,11 +35,7 @@ func (s *File) Init() error {
 	return nil
 }
 
-func (s *File) NewWriter(d *Data) (io.WriteCloser, error) {
-	id := d.Get("identifier").(string)
-	if id == "" {
-		return nil, RwError(s, "No identifier")
-	}
+func (s *File) NewWriter(id string, d *Data) (io.WriteCloser, error) {
 	file, err := os.OpenFile(s.join(id), os.O_RDWR|os.O_CREATE, 0655)
 	if err != nil {
 		return nil, RwError(s, err.Error())
@@ -47,11 +43,7 @@ func (s *File) NewWriter(d *Data) (io.WriteCloser, error) {
 	return file, nil
 }
 
-func (s *File) NewReader(d *Data) (io.ReadCloser, error) {
-	id := d.Get("identifier").(string)
-	if id == "" {
-		return nil, RwError(s, "No identifier")
-	}
+func (s *File) NewReader(id string, d *Data) (io.ReadCloser, error) {
 	file, err := os.OpenFile(s.join(id), os.O_RDONLY, 0444)
 	if err != nil {
 		return nil, RwError(s, err.Error())
@@ -59,11 +51,7 @@ func (s *File) NewReader(d *Data) (io.ReadCloser, error) {
 	return file, nil
 }
 
-func (s *File) Delete(d *Data) error {
-	id := d.Get("identifier").(string)
-	if id == "" {
-		return RwError(s, "No identifier")
-	}
+func (s *File) Delete(id string, d *Data) error {
 	if err := os.Remove(s.join(id)); err != nil {
 		return RwError(s, err.Error())
 	}

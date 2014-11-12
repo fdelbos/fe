@@ -1,11 +1,10 @@
 package rw_test
 
 import (
-	. "github.com/fdelbos/fe/rw"
-
 	"bytes"
 	"crypto/rand"
 	"github.com/dchest/uniuri"
+	. "github.com/fdelbos/fe/rw"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"io"
@@ -23,11 +22,10 @@ var _ = Describe("File", func() {
 	}
 
 	id := uniuri.New()
-	data.Set("identifier", id)
 
 	It("should Write", func() {
 		Ω(f.Init()).To(BeNil())
-		w, err := f.NewWriter(data)
+		w, err := f.NewWriter(id, data)
 		Ω(err).To(BeNil())
 		Ω(w).ToNot(BeNil())
 		l, err := io.Copy(w, bytes.NewReader(testBin))
@@ -37,7 +35,7 @@ var _ = Describe("File", func() {
 	})
 
 	It("should read", func() {
-		r, err := f.NewReader(data)
+		r, err := f.NewReader(id, data)
 		Ω(err).To(BeNil())
 		Ω(r).ToNot(BeNil())
 		out1 := new(bytes.Buffer)
@@ -49,7 +47,7 @@ var _ = Describe("File", func() {
 	})
 
 	It("should delete", func() {
-		Ω(f.Delete(data)).To(BeNil())
+		Ω(f.Delete(id, data)).To(BeNil())
 		_, err := os.Stat(f.Dir + "/" + id)
 		Ω(os.IsNotExist(err)).To(BeTrue())
 	})

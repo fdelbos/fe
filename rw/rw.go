@@ -37,12 +37,12 @@ type EncodeDecoder interface {
 
 type Outputer interface {
 	RwBase
-	NewWirter() io.Writer
+	NewWriter(string, *Data) (io.WriteCloser, error)
 }
 
 type Inputer interface {
 	RwBase
-	NewReader() io.Reader
+	NewReader(string, *Data) (io.ReadCloser, error)
 }
 
 func RwError(e RwBase, err string) error {
