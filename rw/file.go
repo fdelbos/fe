@@ -7,13 +7,13 @@
 package rw
 
 import (
-	"os"
 	"io"
+	"os"
 	"path/filepath"
 )
 
 type File struct {
-	Dir string `json:"dir"`
+	Dir  string `json:"dir"`
 	Name string `json:"name"`
 }
 
@@ -36,11 +36,11 @@ func (s *File) Init() error {
 }
 
 func (s *File) NewWriter(d *Data) (io.WriteCloser, error) {
-	id := d.Get("identifier")
+	id := d.Get("identifier").(string)
 	if id == "" {
 		return nil, RwError(s, "No identifier")
 	}
-	file, err := os.OpenFile(s.join(id), os.O_RDWR|os.O_CREATE, 0666)
+	file, err := os.OpenFile(s.join(id), os.O_RDWR|os.O_CREATE, 0655)
 	if err != nil {
 		return nil, RwError(s, err.Error())
 	}
@@ -48,7 +48,7 @@ func (s *File) NewWriter(d *Data) (io.WriteCloser, error) {
 }
 
 func (s *File) NewReader(d *Data) (io.ReadCloser, error) {
-	id := d.Get("identifier")
+	id := d.Get("identifier").(string)
 	if id == "" {
 		return nil, RwError(s, "No identifier")
 	}
@@ -60,11 +60,11 @@ func (s *File) NewReader(d *Data) (io.ReadCloser, error) {
 }
 
 func (s *File) Delete(d *Data) error {
-	id := d.Get("identifier")
+	id := d.Get("identifier").(string)
 	if id == "" {
 		return RwError(s, "No identifier")
 	}
-	if err :=  os.Remove(s.join(id)); err != nil {
+	if err := os.Remove(s.join(id)); err != nil {
 		return RwError(s, err.Error())
 	}
 	return nil
