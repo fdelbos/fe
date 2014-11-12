@@ -11,6 +11,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"io"
 	"io/ioutil"
 )
@@ -34,22 +35,22 @@ func (c *AES256) Init() error {
 	case c.File != "":
 		key, err = ioutil.ReadFile(c.File)
 		if err != nil {
-			return RwError(c, err.Error())
+			return err
 		}
 	case c.Base64String != "":
 		key, err = base64.StdEncoding.DecodeString(c.Base64String)
 		if err != nil {
-			return RwError(c, err.Error())
+			return err
 		}
 	default:
-		return RwError(c, "needs a key")
+		return errors.New("needs a cycpher key")
 	}
 	if len(key) != 32 {
-		return RwError(c, "key must be 32 bytes long")
+		return errors.New("key must be 32 bytes long")
 	}
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return RwError(c, err.Error())
+		return err
 	}
 	c.block = block
 	return nil
@@ -62,24 +63,27 @@ func (c *AES256) Encode(r io.Reader, w io.Writer, d *Data) error {
 	stream := cipher.NewCFBEncrypter(c.block, iv)
 	writer := &cipher.StreamWriter{S: stream, W: w}
 	if _, err := io.Copy(writer, r); err != nil {
-		return RwError(c, err.Error())
+		return err
 	}
 	return nil
 }
 
 func (c *AES256) Decode(r io.Reader, w io.Writer, d *Data) error {
-	iv64 := d.Get("iv")
-	if iv64 == "" {
-		return RwError(c, "AES 256: no initialization vector provided")
+	iv64, err := d.Get("iv")
+	if err != nil {
+		return err
+	}
+	if iv64.(string) == "" {
+		return errors.New("no initialization vector provided")
 	}
 	iv, err := base64.StdEncoding.DecodeString(iv64.(string))
 	if err != nil {
-		return RwError(c, err.Error())
+		return err
 	}
 	stream := cipher.NewCFBDecrypter(c.block, iv)
 	reader := &cipher.StreamReader{S: stream, R: r}
 	if _, err := io.Copy(w, reader); err != nil {
-		return RwError(c, err.Error())
+		return err
 	}
 	return nil
 }

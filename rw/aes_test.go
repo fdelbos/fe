@@ -27,7 +27,9 @@ var _ = Describe("Aes", func() {
 			out1,
 			data)).To(BeNil())
 		Ω(bytes.Equal(out1.Bytes(), testBin)).To(BeFalse())
-		Ω(len(data.Get("iv").(string)) > 0).To(BeTrue())
+		d, err := data.Get("iv")
+		Ω(err).To(BeNil())
+		Ω(len(d.(string)) > 0).To(BeTrue())
 	})
 
 	out2 := new(bytes.Buffer)
