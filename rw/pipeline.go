@@ -7,17 +7,16 @@
 package rw
 
 import (
-	"errors"
 	"io"
 	"sync"
 )
 
 type Pipeline struct {
-	lastReader io.ReadCloser
-	errorChain []chan error
+	lastReader  io.ReadCloser
+	errorChain  []chan error
 	cancelChain []chan struct{}
-	Errors []error
-	size int
+	Errors      []error
+	size        int
 }
 
 type EncodingPipeline struct {
@@ -30,30 +29,30 @@ type DecodingPipeline struct {
 	Input    Inputer
 }
 
-func (p *Pipeline) mergeErrors(chans []chan error) <- chan error {
+func (p *Pipeline) mergeErrors(chans []chan error) <-chan error {
 	var wg sync.WaitGroup
 	out := make(chan error, 1)
-	
+
 	output := func(c <-chan error) {
 		for n := range c {
 			out <- n
 		}
 		wg.Done()
-    }
-    wg.Add(p.size)
-    for _, c := range chans {
-        go output(c)
-    }
+	}
+	wg.Add(p.size)
+	for _, c := range chans {
+		go output(c)
+	}
 
 	go func() {
-        wg.Wait()
-        close(out)
-    }()
-    return out
+		wg.Wait()
+		close(out)
+	}()
+	return out
 }
 
 func (p *Pipeline) stopAll() {
-	for _, c := range(p.cancelChain) {
+	for _, c := range p.cancelChain {
 		close(c)
 	}
 }
@@ -66,8 +65,8 @@ func (p *Pipeline) Exec(w io.Writer) error {
 		_, err := io.Copy(w, p.lastReader)
 		errCh <- err
 		close(errCh)
-	}()	
-	errCopy := <- errCh
+	}()
+	errCopy := <-errCh
 	if errCopy != nil {
 		return errCopy
 	}
@@ -86,24 +85,18 @@ func (p *Pipeline) Exec(w io.Writer) error {
 	return firstError
 }
 
-func newPipeline(r io.ReadCloser, size int) (*Pipeline, error){
-	if size == 0 {
-		return nil, errors.New("pipeline: A pipeline should have at lease 1 operation")
-	}
+func newPipeline(r io.ReadCloser, size int) *Pipeline {
 	p := &Pipeline{
-		lastReader: r,
-		errorChain: make([]chan error, size),
+		lastReader:  r,
+		errorChain:  make([]chan error, size),
 		cancelChain: make([]chan struct{}, size),
-		size: size,
+		size:        size,
 	}
-	return p, nil
+	return p
 }
 
-func NewEncoding(encoders []Encoder, r io.ReadCloser, d *Data) (*Pipeline, error) {
-	p, err := newPipeline(r, len(encoders))
-	if err != nil {
-		return nil, err
-	}
+func NewEncoding(encoders []Encoder, r io.ReadCloser, d *Data) *Pipeline {
+	p := newPipeline(r, len(encoders))
 	for i, e := range encoders {
 		errCh := make(chan error, 1)
 		cancelCh := make(chan struct{}, 1)
@@ -115,7 +108,7 @@ func NewEncoding(encoders []Encoder, r io.ReadCloser, d *Data) (*Pipeline, error
 
 			go func() {
 				select {
-				case <- cancelCh:
+				case <-cancelCh:
 					r.Close()
 				}
 			}()
@@ -127,14 +120,11 @@ func NewEncoding(encoders []Encoder, r io.ReadCloser, d *Data) (*Pipeline, error
 		p.errorChain[i] = errCh
 		p.cancelChain[i] = cancelCh
 	}
-	return p, nil
+	return p
 }
 
-func NewDecoding(decoders []Decoder, r io.ReadCloser, d *Data) (*Pipeline, error) {
-	p, err := newPipeline(r, len(decoders))
-	if err != nil {
-		return nil, err
-	}
+func NewDecoding(decoders []Decoder, r io.ReadCloser, d *Data) *Pipeline {
+	p := newPipeline(r, len(decoders))
 	for i, e := range decoders {
 		errCh := make(chan error, 1)
 		cancelCh := make(chan struct{}, 1)
@@ -146,7 +136,7 @@ func NewDecoding(decoders []Decoder, r io.ReadCloser, d *Data) (*Pipeline, error
 
 			go func() {
 				select {
-				case <- cancelCh:
+				case <-cancelCh:
 					r.Close()
 				}
 			}()
@@ -158,5 +148,5 @@ func NewDecoding(decoders []Decoder, r io.ReadCloser, d *Data) (*Pipeline, error
 		p.errorChain[i] = errCh
 		p.cancelChain[i] = cancelCh
 	}
-	return p, nil
+	return p
 }
