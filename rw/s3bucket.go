@@ -50,7 +50,7 @@ func (s *S3Bucket) Init() error {
 func (s *S3Bucket) NewWriter(d *Data) (io.WriteCloser, error) {
 	id := d.Get("identifier").(string)
 	if id == "" {
-		return nil, RwError(s, "No identifier")
+		return nil, RwError(s, "No identifier found in stream data")
 	}
 	return s.bucket.PutWriter(id, nil, nil)
 }
