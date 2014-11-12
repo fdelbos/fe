@@ -40,4 +40,24 @@ var _ = Describe("Shell", func() {
 			data)).To(BeNil())
 		Ω(bytes.Equal(out2.Bytes(), testBin)).To(BeTrue())
 	})
+
+	It("should crash", func() {
+		testBin := make([]byte, 1<<16)
+		rand.Read(testBin)
+		out1 := new(bytes.Buffer)
+		data := NewData()
+		crash := &Shell{
+			Cmd:  "exit 1",
+			Name: "crash",
+		}
+
+		Ω(crash.Init()).To(BeNil())
+		Ω(crash.Encode(
+			bytes.NewReader(testBin),
+			out1,
+			data)).ToNot(BeNil())
+	})
+
+
+	
 })
