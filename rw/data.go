@@ -7,6 +7,7 @@
 package rw
 
 import (
+	"errors"
 	"sync"
 )
 
@@ -21,10 +22,14 @@ func NewData() *Data {
 	}
 }
 
-func (d *Data) Get(key string) interface{} {
+func (d *Data) Get(key string) (interface{}, error) {
 	d.RLock()
 	defer d.RUnlock()
-	return d.data[key]
+	v, exists := d.data[key]
+	if exists == false {
+		return nil, errors.New("Data '" + key + "' not found")
+	}
+	return v, nil
 }
 
 func (d *Data) Set(key string, value interface{}) {
