@@ -58,6 +58,4 @@ var _ = Describe("Shell", func() {
 			data)).ToNot(BeNil())
 	})
 
-
-	
 })

@@ -22,10 +22,7 @@ func (s *Shell) GetName() string {
 
 func (s *Shell) Init() error {
 	_, err := exec.LookPath("bash")
-	if err != nil {
-		return RwError(s, "bash cannot be found in  current $PATH")
-	}
-	return nil
+	return err
 }
 
 func (s *Shell) Encode(r io.Reader, w io.Writer, d *Data) error {
@@ -33,11 +30,7 @@ func (s *Shell) Encode(r io.Reader, w io.Writer, d *Data) error {
 	cmd.Stdout = w
 	cmd.Stdin = r
 	if err := cmd.Start(); err != nil {
-		return RwError(s, err.Error())
+		return err
 	}
-
-	if err := cmd.Wait(); err != nil {
-		return RwError(s, err.Error())
-	}
-	return nil
+	return cmd.Wait()
 }
