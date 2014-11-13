@@ -13,6 +13,11 @@ import (
 
 type Gzip struct {
 	Algo string `json:"algo,omitempty"`
+	Name string
+}
+
+func (c *Gzip) GetName() string {
+	return c.Name
 }
 
 func (c *Gzip) Init() error {
