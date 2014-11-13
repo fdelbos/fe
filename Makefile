@@ -7,7 +7,7 @@
 NAME = fe
 
 all:
-	go build
+	go build -v
 
 clean:
 	rm -fr $(NAME)
@@ -33,6 +33,6 @@ fmt:
 re: clean all
 
 test:
-	go test
+	go test ./...
 
 .PHONY: all clean cross debug fmt re test
