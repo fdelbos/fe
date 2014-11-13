@@ -7,6 +7,7 @@
 package rw
 
 import (
+	"encoding/json"
 	"errors"
 	"sync"
 )
@@ -22,6 +23,12 @@ func NewData() *Data {
 	}
 }
 
+func NewDataFrom(o map[string]interface{}) *Data {
+	return &Data{
+		data: o,
+	}
+}
+
 func (d *Data) Get(key string) (interface{}, error) {
 	d.RLock()
 	defer d.RUnlock()
@@ -32,8 +39,37 @@ func (d *Data) Get(key string) (interface{}, error) {
 	return v, nil
 }
 
+func (d *Data) Export() map[string]interface{} {
+	d.RLock()
+	defer d.RUnlock()
+
+	copy := make(map[string]interface{})
+	for k, v := range d.data {
+		copy[k] = v
+	}
+	return copy
+}
+
 func (d *Data) Set(key string, value interface{}) {
 	d.Lock()
 	defer d.Unlock()
 	d.data[key] = value
+}
+
+func (d *Data) Filter() ([]byte, error) {
+	d.RLock()
+	defer d.RUnlock()
+
+	copy := map[string]interface{}{
+		"size":       d.data["size"],
+		"identifier": d.data["identifier"],
+		"filename":   d.data["filename"],
+	}
+	return json.Marshal(copy)
+}
+
+func (d *Data) ToJson() ([]byte, error) {
+	d.RLock()
+	defer d.RUnlock()
+	return json.Marshal(d.data)
 }
