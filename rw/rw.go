@@ -45,6 +45,11 @@ type Inputer interface {
 	NewReader(string, *Data) (io.ReadCloser, error)
 }
 
+type Deleter interface {
+	RwBase
+	Delete(string) error
+}
+
 func RwError(e RwBase, err string) error {
 	fmt.Println(fmt.Sprintf("%s: %s", e.GetName(), err))
 	return errors.New(fmt.Sprintf("%s: %s", e.GetName(), err))
