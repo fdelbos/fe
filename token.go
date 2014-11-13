@@ -12,20 +12,10 @@ import (
 	"github.com/dchest/uniuri"
 )
 
-type TokenOperation int
-
-const (
-	TokPost   TokenOperation = iota
-	TokGet    TokenOperation = iota
-	TokUpdate TokenOperation = iota
-	TokDelete TokenOperation = iota
-)
-
 type Token struct {
-	Key        string         `json:"key"`
-	Service    string         `json:"service"`
-	Operation  TokenOperation `json:"operation"`
-	Identifier string         `json:"identifier,omitempty"`
+	Key        string `json:"key"`
+	Service    string `json:"service"`
+	Identifier string `json:"identifier,omitempty"`
 }
 
 type TokenService struct {
@@ -33,12 +23,11 @@ type TokenService struct {
 	cache   Cache
 }
 
-func (ts *TokenService) NewToken(service string, operation TokenOperation, identifier string) (*Token, error) {
+func (ts *TokenService) NewToken(service string) (*Token, error) {
 	token := &Token{
 		Key:        uniuri.New(),
 		Service:    service,
-		Operation:  operation,
-		Identifier: identifier,
+		Identifier: "",
 	}
 	if err := ts.Set(token); err != nil {
 		return nil, err

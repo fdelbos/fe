@@ -11,7 +11,6 @@ import (
 	"github.com/fdelbos/fe/rw"
 	"github.com/gorilla/mux"
 	"io"
-	"net/http"
 )
 
 type Access int
@@ -35,8 +34,8 @@ type Service struct {
 	Delete       Access
 	EncodingPipe *rw.EncodingPipeline
 	DecodingPipe *rw.DecodingPipeline
-	MaxSize      int64    `json:"maxSize"`
 	MimesTypes   []string `json:"mimesTypes"`
+	Tokens       *TokenService
 }
 
 func (s *Service) Encode(id string, r io.ReadCloser, data *rw.Data) error {
@@ -94,49 +93,42 @@ func (s *Service) Decode(id string, w io.WriteCloser, data *rw.Data) error {
 	return nil
 }
 
-func (s *Service) match(r *http.Request, rm *mux.RouteMatch) bool {
-	if s.MaxSize != 0 && r.ContentLength > s.MaxSize {
-		return false
-	}
-	return true
-}
-
-func (a Access) isAccessible() bool {
-	return a == AccCommit || a == AccToken || a == AccPublic
-}
-
 func (s *Service) RegisterPublic(r *mux.Router) {
-	sr := r.PathPrefix(s.Url).MatcherFunc(s.match).Subrouter()
+	sr := r.PathPrefix(s.Url).Subrouter()
 
 	if s.Post == AccPublic {
 		sr.HandleFunc("/", s.publicPost).Methods("POST")
 	} else if s.Post == AccToken || s.Post == AccCommit {
-		sr.HandleFunc("/{identifier}", s.publicPost).Methods("POST")
+		sr.HandleFunc("/{token}", s.publicPost).Methods("POST")
 	}
-	if s.Get.isAccessible() {
+	if s.Get == AccPublic {
 		sr.HandleFunc("/{identifier}", s.publicGet).Methods("GET")
-	}
-	if s.Delete.isAccessible() {
-		sr.HandleFunc("/{identifier}", s.publicDelete).Methods("DELETE")
 	}
 }
 
 func (s *Service) setCommit(r *mux.Router) {
 	sr := r.PathPrefix("/commit").Subrouter()
-	sr.HandleFunc("/{token}", s.commit).Methods("POST")
+	sr.HandleFunc("/", s.commit).Methods("POST")
 }
 
 func (s *Service) setTokens(r *mux.Router) {
 	sr := r.PathPrefix("/token").Subrouter()
 	sr.HandleFunc("/", s.genToken).Methods("POST")
+	sr.HandleFunc("/", s.genToken).Methods("GET")
 	sr.HandleFunc("/{token}", s.getToken).Methods("GET")
 	sr.HandleFunc("/{token}", s.deleteToken).Methods("DELETE")
 }
 
 func (s *Service) RegisterPrivate(r *mux.Router) {
-	sr := r.PathPrefix(s.Url).MatcherFunc(s.match).Subrouter()
+	sr := r.PathPrefix(s.Url).Subrouter()
 
 	if s.Post != AccDenied {
+		if s.Post == AccCommit {
+			s.setCommit(sr)
+		}
+		if s.Post == AccCommit || s.Post == AccToken {
+			s.setTokens(sr)
+		}
 		sr.HandleFunc("/", s.privatePost).Methods("POST")
 	}
 	if s.Get != AccDenied {
@@ -146,14 +138,8 @@ func (s *Service) RegisterPrivate(r *mux.Router) {
 		sr.HandleFunc("/{identifier}", s.privateDelete).Methods("DELETE")
 	}
 
-	if s.Post == AccCommit {
-		s.setCommit(sr)
-		s.setTokens(sr)
-		return
-	}
+	// if s.Post == AccCommit || s.Post == AccToken {
+	// 	s.setCommit(sr)
+	// }
 
-	switch AccToken {
-	case s.Post, s.Get, s.Delete:
-		s.setTokens(sr)
-	}
 }

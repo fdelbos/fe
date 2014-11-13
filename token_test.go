@@ -21,7 +21,7 @@ var _ = Describe("Token", func() {
 	})
 
 	It("should create, get, set, delete tokens", func() {
-		t1, err := ts.NewToken("test", TokPost, "")
+		t1, err := ts.NewToken("test")
 		Ω(err).To(BeNil())
 		Ω(t1).ToNot(BeNil())
 
