@@ -9,8 +9,6 @@ package main
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	// "errors"
-	// "mime/multipart"
 )
 
 var (
@@ -23,31 +21,32 @@ type Backend interface {
 	Set(string, map[string]interface{}) error
 	Commit(string) error
 	Delete(string) error
+	Init() error
 }
 
 type MongoBackend struct {
-	Db         *mgo.Database
-	Collection string
+	Collection string `json:"collection"`
+	Database   string `json:"database"`
+	Host       string `json:"host"`
+	db         *mgo.Database
 }
 
-func NewMongoBackend(url, db, collection string) (*MongoBackend, error) {
-	b := &MongoBackend{
-		Collection: collection,
-	}
-	session, err := mgo.Dial(url)
+func (b *MongoBackend) Init() error {
+	session, err := mgo.Dial(b.Host)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	session.SetMode(mgo.Monotonic, true)
-	b.Db = session.DB(db)
-	return b, nil
+	b.db = session.DB(b.Database)
+	return nil
 }
 
 func (b *MongoBackend) C() *mgo.Collection {
-	return b.Db.C(b.Collection)
+	return b.db.C(b.Collection)
 }
 
 func (b *MongoBackend) NewId() string {
+	//return uniuri.New()
 	return bson.NewObjectId().Hex()
 }
 
