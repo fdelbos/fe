@@ -18,7 +18,7 @@ cross:
 	rm -fr debian
 
 debug: re
-	./$(NAME) --private 7031 --public 7030 config.json
+	./$(NAME) --private 7031 --public 7032 config.json
 
 fmt:
 	go fmt ./...
