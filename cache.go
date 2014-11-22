@@ -21,20 +21,21 @@ type Cache interface {
 	Set(string, interface{}) error
 	Get(string, interface{}) error
 	Del(string) error
+	Init() error
 }
 
-type Redis struct {
+type RedisCache struct {
+	Prefix string `json:"prefix"`
+	Host   string `json:"host"`
 	pool   *redis.Pool
-	prefix string
 }
 
-func NewRedis(url, prefix string) (*Redis, error) {
-	r := new(Redis)
+func (r *RedisCache) Init() error {
 	r.pool = &redis.Pool{
 		MaxIdle:     3,
 		IdleTimeout: 240 * time.Second,
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", url)
+			c, err := redis.Dial("tcp", r.Host)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -45,24 +46,24 @@ func NewRedis(url, prefix string) (*Redis, error) {
 			return err
 		},
 	}
-	return r, nil
+	return nil
 }
 
-func (r *Redis) Set(key string, data interface{}) error {
+func (r *RedisCache) Set(key string, data interface{}) error {
 	conn := r.pool.Get()
 	defer conn.Close()
 	j, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
-	_, err = conn.Do("SET", r.prefix+key, j)
+	_, err = conn.Do("SET", r.Prefix+key, j)
 	return err
 }
 
-func (r *Redis) Get(key string, container interface{}) error {
+func (r *RedisCache) Get(key string, container interface{}) error {
 	conn := r.pool.Get()
 	defer conn.Close()
-	data, err := conn.Do("GET", r.prefix+key)
+	data, err := conn.Do("GET", r.Prefix+key)
 	if err != nil {
 		return err
 	}
@@ -72,9 +73,9 @@ func (r *Redis) Get(key string, container interface{}) error {
 	return json.Unmarshal(data.([]byte), container)
 }
 
-func (r *Redis) Del(key string) error {
+func (r *RedisCache) Del(key string) error {
 	conn := r.pool.Get()
 	defer conn.Close()
-	_, err := conn.Do("DEL", r.prefix+key)
+	_, err := conn.Do("DEL", r.Prefix+key)
 	return err
 }
