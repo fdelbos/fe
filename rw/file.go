@@ -7,6 +7,7 @@
 package rw
 
 import (
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -27,33 +28,22 @@ func (s *File) GetName() string {
 
 func (s *File) Init() error {
 	if s.Dir == "" {
-		return RwError(s, "attribute 'dir' is empty")
+		return errors.New("attribute 'dir' is empty")
 	}
 	if err := os.MkdirAll(s.Dir, 0755); err != nil {
-		return RwError(s, err.Error())
+		return err
 	}
 	return nil
 }
 
 func (s *File) NewWriter(id string, d *Data) (io.WriteCloser, error) {
-	file, err := os.OpenFile(s.join(id), os.O_RDWR|os.O_CREATE, 0655)
-	if err != nil {
-		return nil, RwError(s, err.Error())
-	}
-	return file, nil
+	return os.OpenFile(s.join(id), os.O_RDWR|os.O_CREATE, 0655)
 }
 
 func (s *File) NewReader(id string, d *Data) (io.ReadCloser, error) {
-	file, err := os.OpenFile(s.join(id), os.O_RDONLY, 0444)
-	if err != nil {
-		return nil, RwError(s, err.Error())
-	}
-	return file, nil
+	return os.OpenFile(s.join(id), os.O_RDONLY, 0444)
 }
 
 func (s *File) Delete(id string, d *Data) error {
-	if err := os.Remove(s.join(id)); err != nil {
-		return RwError(s, err.Error())
-	}
-	return nil
+	return os.Remove(s.join(id))
 }
