@@ -30,3 +30,5 @@ _testmain.go
 .DS_Store
 
 /env
+
+/config.json

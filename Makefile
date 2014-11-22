@@ -18,15 +18,7 @@ cross:
 	rm -fr debian
 
 debug: re
-	./$(NAME) \
-	--tmp ./tmp \
-	--private 7031 \
-	--public 7030 \
-	--mongo localhost \
-	--db test-fe \
-	--coll files \
-	--redis localhost:6379 \
-	buckets.json
+	./$(NAME) --private 7031 --public 7030 config.json
 
 fmt:
 	go fmt ./...

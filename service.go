@@ -27,14 +27,13 @@ const (
 )
 
 type Service struct {
-	Url          string `json:"url"`
+	Url          string
 	Back         Backend
 	Post         Access
 	Get          Access
 	Delete       Access
 	EncodingPipe *rw.EncodingPipeline
 	DecodingPipe *rw.DecodingPipeline
-	MimesTypes   []string `json:"mimesTypes"`
 	Tokens       *TokenService
 }
 
@@ -137,9 +136,5 @@ func (s *Service) RegisterPrivate(r *mux.Router) {
 	if s.Delete != AccDenied {
 		sr.HandleFunc("/{identifier}", s.privateDelete).Methods("DELETE")
 	}
-
-	// if s.Post == AccCommit || s.Post == AccToken {
-	// 	s.setCommit(sr)
-	// }
 
 }
