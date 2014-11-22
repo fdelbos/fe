@@ -8,12 +8,12 @@ import (
 var _ = Describe("Token", func() {
 
 	var ts *TokenService
-	var redis *Redis
-	var err error
+	redis := &RedisCache{
+		Host:   "localhost:6379",
+		Prefix: "test-fe",
+	}
 	It("should create a redis cache and a token service", func() {
-		redis, err = NewRedis("bubble:6379", "test-fe")
-		Ω(err).To(BeNil())
-		Ω(redis).ToNot(BeNil())
+		Ω(redis.Init()).To(BeNil())
 		ts = &TokenService{
 			Service: "test",
 			cache:   redis,

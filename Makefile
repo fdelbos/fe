@@ -5,6 +5,7 @@
 ## 
 
 NAME = fe
+VERSION = 0.1.1
 
 all:
 	go build -v
@@ -21,10 +22,10 @@ debug: re
 	--tmp ./tmp \
 	--private 7031 \
 	--public 7030 \
-	--mongo bubble \
+	--mongo localhost \
 	--db test-fe \
 	--coll files \
-	--redis bubble:6379 \
+	--redis localhost:6379 \
 	buckets.json
 
 fmt:
