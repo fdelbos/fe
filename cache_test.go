@@ -8,12 +8,12 @@ import (
 
 var _ = Describe("Cache", func() {
 
-	var redis *Redis
-	var err error
+	redis := &RedisCache{
+		Host:   "localhost:6379",
+		Prefix: "test-fe",
+	}
 	It("should create a redis cache", func() {
-		redis, err = NewRedis("bubble:6379", "test-fe")
-		Ω(err).To(BeNil())
-		Ω(redis).ToNot(BeNil())
+		Ω(redis.Init()).To(BeNil())
 	})
 
 	It("should set, get and delete data from redis", func() {
