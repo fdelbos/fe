@@ -9,11 +9,13 @@ import (
 var _ = Describe("Backend", func() {
 
 	var backend *MongoBackend
-	var err error
 	It("should create a backend", func() {
-		backend, err = NewMongoBackend("bubble", "test-fe", "files")
-		Ω(err).To(BeNil())
-		Ω(backend).ToNot(BeNil())
+		backend = &MongoBackend{
+			Collection: "files",
+			Database:   "test-fe",
+			Host:       "localhost",
+		}
+		Ω(backend.Init()).To(BeNil())
 	})
 
 	It("should create and id", func() {
@@ -45,5 +47,4 @@ var _ = Describe("Backend", func() {
 		from, err = backend.Get(id)
 		Ω(err).To(Equal(ErrNotFound))
 	})
-
 })
