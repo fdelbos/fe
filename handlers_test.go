@@ -3,17 +3,15 @@ package main
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/json"
 	"github.com/dchest/uniuri"
 	"github.com/fdelbos/fe/rw"
+	"github.com/gorilla/mux"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
-	//	"io"
-	//	"fmt"
-	"encoding/json"
-	"github.com/gorilla/mux"
 	"net/url"
 )
 
@@ -49,20 +47,23 @@ var _ = Describe("Handlers", func() {
 		Delete: AccPrivate,
 	}
 
-	var backend *MongoBackend
-	var redis *Redis
+	backend := &MongoBackend{
+		Collection: "files",
+		Database:   "test-fe",
+		Host:       "localhost",
+	}
+
+	redis := &RedisCache{
+		Host:   "localhost:6379",
+		Prefix: "test-fe",
+	}
+
 	var ts *httptest.Server
 
 	It("should start backend, cache", func() {
-		var err error
-		backend, err = NewMongoBackend("bubble", "test-fe", "files")
-		Ω(err).To(BeNil())
-		Ω(backend).ToNot(BeNil())
+		Ω(backend.Init()).To(BeNil())
 		service.Back = backend
-
-		redis, err = NewRedis("bubble:6379", "test-fe")
-		Ω(err).To(BeNil())
-		Ω(redis).ToNot(BeNil())
+		Ω(redis.Init()).To(BeNil())
 		service.Tokens = &TokenService{
 			Service: "test",
 			cache:   redis,
